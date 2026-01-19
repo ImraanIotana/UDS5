@@ -38,7 +38,6 @@ function Start-MSIRemoval {
         ####################################################################################################
         ### MAIN PROPERTIES ###
 
-
         # Input
         [System.String[]]$MSIBaseNamesOrProductCodes    = $DeploymentObject.MSIBaseNamesOrProductCodes
 
@@ -49,6 +48,7 @@ function Start-MSIRemoval {
         [System.String]$MSIExecutablePath   = $Global:DeploymentObject.MSIExecutablePath
         [System.String]$MSIArgumentFix      = '/X "{0}" REBOOT=Suppress /QN'
         [System.Int32[]]$SuccessExitCodes   = @(0,3010)
+
 
         ####################################################################################################
         ### SUPPORTING FUNCTIONS ###
@@ -116,6 +116,18 @@ function Start-MSIRemoval {
         # EXECUTION
         # for each item in the array
         foreach($Item in $MSIBaseNamesOrProductCodes) {
+            # If the item is a GUID
+            [System.String]$MSIIdentifier = if (Test-String -IsGUID $Item) {
+                # Use the GUID
+                $Item
+            } else {
+                # Get the path of the MSI
+                [System.String]$MSIFilePath = Get-SourceItemPath -FileName "$Item.msi"
+                # Get the ProductCode from the MSI
+                [System.String]$MSIProductCode = Get-MSIProductCode -Path $MSIFilePath
+                # Return the ProductCode
+                $MSIProductCode
+            }
 
         }
 
