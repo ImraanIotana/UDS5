@@ -43,7 +43,7 @@ function Start-MSIRemoval {
         [System.Int32[]]$SuccessExitCodes               = $DeploymentObject.UninstallSuccessExitCodes
 
         # Output
-        [System.Boolean]$DeploymentSuccess  = $null
+        [System.Boolean]$DeploymentSuccess  = $false
 
         # MSI Handlers
         [System.String]$MSIExecutablePath   = $Global:DeploymentObject.MSIExecutablePath
@@ -76,10 +76,14 @@ function Start-MSIRemoval {
         if ($MSIBaseNamesOrProductCodes.Count -le 0) {
             # Write the message and return false
             Write-Line "The MSIBaseNamesOrProductCodes Array is empty. Please enter at least 1 MSI or ProductCode." -Type Fail
-            $DeploymentSuccess = $false ; Return
+            Return
         }
 
         
+        # PREPARATION
+        # Set the result array
+        [System.Collections.Generic.List[System.Boolean]]$ResultArray = @()
+
         # EXECUTION
         try {
             # for each item in the array
@@ -96,7 +100,7 @@ function Start-MSIRemoval {
                 }
 
                 # If the MSI is installed, then uninstall it
-                $DeploymentSuccess = if (Test-MSIIsInstalled -ProductCode $MSIProductCode -OutHost) {
+                $UninstallSuccess = if (Test-MSIIsInstalled -ProductCode $MSIProductCode -OutHost) {
 
                     # Set the ArgumentList
                     [System.String]$ArgumentList = ($MSIArgumentFix -f $MSIProductCode)
@@ -114,10 +118,26 @@ function Start-MSIRemoval {
                     Write-Line "The MSI is not installed. No action has been taken. ($Item)" -Type Success
                     $true
                 }
+
+                # Add the result to the array
+                $ResultArray.Add($UninstallSuccess)
             }
         }
         catch {
             Write-FullError
+            $ResultArray.Add($false)
+        }
+
+
+        # EVALUATION
+        # Evaluate the results
+        if (($ResultArray.Count -eq 0) -or ($ResultArray -contains $false)) {
+            # If any of the results is false, then the deployment failed
+            Write-Line "One or more MSIs failed to uninstall." -Type Fail
+        } else {
+            # Else, the deployment succeeded
+            Write-Line "All MSIs have been uninstalled successfully." -Type Success
+            $DeploymentSuccess = $true
         }
 
     }
