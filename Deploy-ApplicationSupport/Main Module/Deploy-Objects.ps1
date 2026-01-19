@@ -74,6 +74,7 @@ function Deploy-Objects {
                 [System.Boolean]$ObjectDeploymentIsSuccesful = switch ($DeploymentObjectType) {
                     # GENERAL INSTALLATIONS
                     'DEPLOYMSI'                 { Start-MSIDeployment               -DeploymentObject $DeploymentObject -Action $Action } # 5.5.1
+                    'REMOVEMSI'                 { Start-MSIRemoval                  -DeploymentObject $DeploymentObject -Action $Action } # 5.6.2
                     'DEPLOYEXECUTABLE'          { Start-ExecutableDeployment        -DeploymentObject $DeploymentObject -Action $Action } # 5.5.3
                     'DEPLOYISSSETUP'            { Start-ISSDeployment               -DeploymentObject $DeploymentObject -Action $Action } # 5.5.3
                     'DEPLOYINNOSETUP'           { Start-INNODeployment              -DeploymentObject $DeploymentObject -Action $Action } # 5.5.2
@@ -98,7 +99,6 @@ function Deploy-Objects {
                     'DEPLOYREGFILE'             { Start-REGFileDeployment           -DeploymentObject $DeploymentObject -Action $Action } # 5.5.3
                     'DEPLOYWINDOWSPACKAGE'      { Start-WindowsPackageDeployment    -DeploymentObject $DeploymentObject -Action $Action } # 5.5.3
                     'DISABLESCHEDULEDTASK'      { Start-DisableScheduledTask        -DeploymentObject $DeploymentObject -Action $Action } # 5.5.3
-                    'REMOVEMSI'                 { Start-MSIRemoval                  -DeploymentObject $DeploymentObject -Action $Action } # 5.5.1
                     'DEPLOYFONT'                { Deploy-Font                       -DeploymentObject $DeploymentObject -Action $Action } # 5.5.1
                     'DEPLOYUSERPROFILEFOLDER'   { Deploy-UserProfileFolder          -DeploymentObject $DeploymentObject -Action $Action } # 5.5.1
                     'DEPLOYACTIVESETUP'         { Deploy-ActiveSetup                -DeploymentObject $DeploymentObject -Action $Action } # 5.5.1

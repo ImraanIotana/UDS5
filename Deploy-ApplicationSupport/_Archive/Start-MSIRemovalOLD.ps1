@@ -21,7 +21,7 @@
 #>
 ####################################################################################################
 
-function Start-MSIRemoval {
+function Start-MSIRemovalOLD {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true,HelpMessage='The object containing the needed information')]
