@@ -40,6 +40,7 @@ function Start-MSIRemoval {
 
         # Input
         [System.String[]]$MSIBaseNamesOrProductCodes    = $DeploymentObject.MSIBaseNamesOrProductCodes
+        [System.Int32[]]$SuccessExitCodes               = $DeploymentObject.UninstallSuccessExitCodes
 
         # Output
         [System.Boolean]$DeploymentSuccess  = $null
@@ -47,40 +48,6 @@ function Start-MSIRemoval {
         # MSI Handlers
         [System.String]$MSIExecutablePath   = $Global:DeploymentObject.MSIExecutablePath
         [System.String]$MSIArgumentFix      = '/X "{0}" REBOOT=Suppress /QN'
-        [System.Int32[]]$SuccessExitCodes   = @(0,3010)
-
-
-        ####################################################################################################
-        ### SUPPORTING FUNCTIONS ###
-
-        function Confirm-Input {
-            # If both are empty, add false
-            if ((Test-String -IsEmpty $MSIFileName) -and (Test-String -IsEmpty $DeploymentObject.MSIProductCode)) {
-                Write-Fail ('[{0}]: Both the MSIFileName and the MSIProductCode properties are empty. Either of these is mandatory.' -f $FunctionName)
-                $ValidationArrayList.Add($false)
-            } else {
-                $ValidationArrayList.Add($true)
-            }
-            # If an MSIFileName is entered, get the MSIFilePath and validate it 
-            if (Test-String -IsPopulated $MSIFileName) {
-                [System.String]$MSIFilePath = Get-SourceItemPath -FileName $MSIFileName
-                $ValidationArrayList.Add((Confirm-Object -MandatoryItem $MSIFilePath))
-            }
-        }
-
-        function Uninstall-MSIInternalFunction {
-            # Run the MSI process
-            Write-Host ("[$FunctionName]: Running the MSIexec process with the following arguments: $ArgumentList")
-            [System.Int32]$ExitCode = (Start-Process -FilePath $MSIExecutablePath -ArgumentList $ArgumentList -Wait -PassThru).ExitCode
-            # Return the result
-            if ($ExitCode -in $SuccessExitCodes) {
-                Write-Success ('[{0}]: The ExitCode of the MSI Process is: ({1})' -f $FunctionName,$ExitCode)
-                $true
-            } else {
-                Write-Fail ('[{0}]: The ExitCode of the MSI Process is: ({1})' -f $FunctionName,$ExitCode)
-                $false
-            }
-        }
 
         ####################################################################################################
     }
@@ -114,36 +81,45 @@ function Start-MSIRemoval {
 
         
         # EXECUTION
-        # for each item in the array
-        foreach($Item in $MSIBaseNamesOrProductCodes) {
-            # If the item is a GUID
-            [System.String]$MSIIdentifier = if (Test-String -IsGUID $Item) {
-                # Use the GUID
-                $Item
-            } else {
-                # Get the path of the MSI
-                [System.String]$MSIFilePath = Get-SourceItemPath -FileName "$Item.msi"
-                # Get the ProductCode from the MSI
-                [System.String]$MSIProductCode = Get-MSIProductCode -Path $MSIFilePath
-                # Return the ProductCode
-                $MSIProductCode
+        try {
+            # for each item in the array
+            foreach($Item in $MSIBaseNamesOrProductCodes) {
+
+                # If the item is a GUID
+                Write-Line "Testing if the Item is a GUID... ($Item)"
+                [System.String]$MSIProductCode = if (Test-String -IsGUID $Item) {
+                    # Use the GUID
+                    $Item
+                } else {
+                    # Return the ProductCode from the MSI
+                    Get-MSIProductCode -Path (Get-SourceItemPath -FileName "$Item.msi")
+                }
+
+                # If the MSI is installed, then uninstall it
+                $DeploymentSuccess = if (Test-MSIIsInstalled -ProductCode $MSIProductCode -OutHost) {
+
+                    # Set the ArgumentList
+                    [System.String]$ArgumentList = ($MSIArgumentFix -f $MSIProductCode)
+
+                    # Uninstall the MSI
+                    Write-Line ("Uninstalling the MSI with the following arguments: $ArgumentList") -Type Busy
+                    [System.Int32]$ExitCode = (Start-Process -FilePath $MSIExecutablePath -ArgumentList $ArgumentList -Wait -PassThru).ExitCode
+                    Write-Line "The ExitCode of the MSI Process is: ($ExitCode)" -Type Busy
+
+                    # Return the result
+                    if ($ExitCode -in $SuccessExitCodes) { $true } else { $false }
+
+                } else {
+                    # Else write the message, and return true
+                    Write-Line "The MSI is not installed. No action has been taken. ($Item)" -Type Success
+                    $true
+                }
             }
-
+        }
+        catch {
+            Write-FullError
         }
 
-
-        # Set the ArgumentList
-        [System.String]$MSIIdentifier   =  if ($MSIFilePath) { $MSIFilePath } else { $MSIProductCode }
-        [System.String]$ArgumentList    = ($MSIArgumentFix -f $MSIIdentifier)
-        # Test if the MSI is installed
-        [System.Boolean]$MSIIsInstalled = if ($MSIFilePath) { Test-MSIIsInstalled -Path $MSIIdentifier -OutHost } else { Test-MSIIsInstalled -ProductCode $MSIIdentifier -OutHost }
-        # If the MSI is not installed then return
-        $DeploymentSuccess = if (-Not($MSIIsInstalled)) {
-            Write-Success "[$FunctionName]: The MSI is not installed. No action has been taken. ($MSIIdentifier)"
-            Return $true
-        } else {
-            Uninstall-MSIInternalFunction
-        }
     }
     
     end {
