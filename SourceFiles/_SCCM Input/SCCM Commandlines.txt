@@ -1,0 +1,8 @@
+Install:
+
+Powershell.exe -ExecutionPolicy Bypass -File Deploy-Application.ps1 -Install -Verbose
+
+
+Uninstall:
+
+Powershell.exe -ExecutionPolicy Bypass -File Deploy-Application.ps1 -Uninstall -Verbose
