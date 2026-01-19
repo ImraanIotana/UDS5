@@ -854,7 +854,7 @@ The following example firstly installs an MSI, then waits 10 seconds, then confi
     [PSCustomObject]$Global:DeploymentObject = @{
         # Main
         Name                    = [System.String]'Universal Deployment Script'
-        DeploymentScriptVersion = [System.String]'5.6.1'
+        DeploymentScriptVersion = [System.String]'5.6.2'
         CompanyName             = [System.String]'KeyStone'
         # Deployment Handlers
         AssetID                 = [System.String]$AssetID
