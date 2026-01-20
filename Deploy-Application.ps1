@@ -156,7 +156,7 @@ The following example firstly installs an MSI, then waits 10 seconds, then confi
 # Copy from here:
     @{
         Type                        = 'REMOVEMSI'
-        MSIBaseNamesOrProductCodes  = @()       # (Mandatory String Array) Enter EITHER the MSI Filename OR the MSI Productcode. Example: @('MyApplication.msi','{6B29FC40-CA47-1067-B31D-00DD010662DA}'). (If an MSI Basename is entered, then also provide that file in the sourcefiles.)
+        MSIBaseNamesOrProductCodes  = @()       # (Mandatory String Array) Enter EITHER the MSI Filename OR the MSI Productcode. Example: @('MyApplication.msi','{6B29FC40-CA47-1067-B31D-00DD010662DA}'). (If an MSI is entered, then also provide that file in the sourcefiles.)
         RemoveDuringInstall         = $true     # (Mandatory Boolean) If the MSI should be removed DURING INSTALL, then set this to $true.
         RemoveDuringUninstall       = $false    # (Mandatory Boolean) If the MSI should be removed DURING UNINSTALL, then set this to $true.
         UninstallSuccessExitCodes   = @(0,3010) # (Mandatory Integer Array) Set the UNINSTALL SUCCESS EXIT CODES for the MSI. Example: @(0,123) (The default value is @(0,3010).)
@@ -285,19 +285,13 @@ The following example firstly installs an MSI, then waits 10 seconds, then confi
 ###### TEMPLATE DEPLOYSHORTCUT OBJECT ###### 5.5.2
 
 ###### TEMPLATE REMOVESHORTCUT OBJECT ######
-# ShortcutFileName (Mandatory String)       : Set the FILENAME of the SHORTCUT to remove, during INSTALL, INCLUDING the extension. Examples: 'Acrobat Cloud.lnk' or 'Online Registration.url'
-# RemoveFromDesktop (Mandatory Boolean)     : If the shortcut must be removed from the DESKTOP, then set this value to $true.
-# RemoveFromStartMenu (Mandatory Boolean)   : If the shortcut must be removed from the STARTMENU, then set this value to $true.
-# RemoveDuringInstall (Mandatory Boolean)   : If the shortcut must be removed during INSTALL, then set this value to $true.
-# RemoveDuringUninstall (Mandatory Boolean) : If the shortcut must be removed during UNINSTALL, then set this value to $true.
-# Note                                      : Remember to put this in the right place in the deployment array (most commonly at the bottom).
 # Copy from here:
     @{
         Type                        = 'REMOVESHORTCUT'
-        ShortcutFileName            = ''
-        RemoveDuringInstall         = $true
-        RemoveDuringUninstall       = $false
-        RemoveFromDesktopOnly       = $false
+        ShortcutFileName            = ''        # (Mandatory String) Set the FILENAME of the SHORTCUT to remove, INCLUDING the extension. Examples: 'Acrobat Cloud.lnk' or 'Online Registration.url'
+        RemoveDuringInstall         = $true     # (Mandatory Boolean) If the shortcut must be removed during INSTALL, then set this value to $true.
+        RemoveDuringUninstall       = $false    # (Mandatory Boolean) If the shortcut must be removed during UNINSTALL, then set this value to $true.
+        RemoveFromDesktopOnly       = $false    # (Optional Boolean) If the shortcut must be removed from the DESKTOP only, then set this value to $true. (If false, it will be removed from both Desktop and Startmenu)
     }
 ###### TEMPLATE REMOVESHORTCUT OBJECT ######
 
@@ -364,13 +358,11 @@ The following example firstly installs an MSI, then waits 10 seconds, then confi
 ###### TEMPLATE REMOVELOCALGROUPMEMBER OBJECT ###### 5.5.3
 
 ###### TEMPLATE DEPLOYLOCALUSER OBJECT ###### (Not yet created. Will be added in the future)
-# LocalGroupName (Mandatory String)     : The NAME of the LOCAL GROUP you wish to create. Example: 'Adobe_Users'
-# MakeMemberOf (Non-mandatory String)   : The NAME of the PARENT GROUP, that this new Group must become a member of.
 # Copy from here:
     @{
         Type                        = 'DEPLOYLOCALUSER'
-        LocalGroupName              = ''
-        MakeMemberOf                = ''
+        LocalGroupName              = ''        # (Mandatory String) The NAME of the LOCAL GROUP you wish to create. Example: 'Adobe_Users'
+        MakeMemberOf                = ''        # (Optional String) The NAME of the PARENT GROUP, that this new Group must become a member of. Example: 'Administrators'
     }
 ###### TEMPLATE DEPLOYLOCALGROUP OBJECT ######
 
